@@ -8,6 +8,3 @@ build/
 captures/
 .externalNativeBuild
 .cxx
-
-# APK livrés à part
-*.apk
