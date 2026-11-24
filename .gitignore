@@ -1,0 +1,13 @@
+# Fichiers de build et de configuration locale (jamais versionnés)
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+build/
+captures/
+.externalNativeBuild
+.cxx
+
+# APK livrés à part
+*.apk
