@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fond"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_large">
+
+        <TextView
+            android:id="@+id/txtTitre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/titre_app"
+            android:textColor="@color/bleu_nuit"
+            android:textSize="@dimen/text_size_header"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtSousTitre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_large"
+            android:text="@string/sous_titre"
+            android:textColor="@color/texte_doux"
+            android:textSize="@dimen/text_size_medium" />
+
+        <EditText
+            android:id="@+id/edtVille"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fond_carte"
+            android:hint="@string/hint_ville"
+            android:importantForAutofill="no"
+            android:inputType="textCapWords"
+            android:padding="@dimen/spacing_medium"
+            android:textColor="@color/texte"
+            android:textColorHint="@color/texte_doux"
+            android:textSize="@dimen/text_size_medium" />
+
+        <Button
+            android:id="@+id/btnMeteo"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:backgroundTint="@color/bleu_nuit"
+            android:text="@string/btn_meteo"
+            android:textColor="@color/blanc" />
+
+        <TextView
+            android:id="@+id/txtStatut"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/statut_initial"
+            android:textColor="@color/texte_doux"
+            android:textSize="@dimen/text_size_small" />
+
+        <LinearLayout
+            android:id="@+id/carteMeteo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@drawable/fond_carte"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtVille"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/bleu_nuit"
+                android:textSize="@dimen/text_size_title"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtTemperature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/soleil"
+                android:textSize="44sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtCondition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/texte"
+                android:textSize="@dimen/text_size_medium" />
+
+            <TextView
+                android:id="@+id/txtRessenti"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/texte"
+                android:textSize="@dimen/text_size_medium" />
+
+            <TextView
+                android:id="@+id/txtVent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/texte"
+                android:textSize="@dimen/text_size_medium" />
+
+            <TextView
+                android:id="@+id/txtHumidite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/texte"
+                android:textSize="@dimen/text_size_medium" />
+
+            <TextView
+                android:id="@+id/txtJournee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/texte_doux"
+                android:textSize="@dimen/text_size_medium" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

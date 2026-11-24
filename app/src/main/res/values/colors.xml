@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palette Météo Poche -->
+    <color name="bleu_nuit">#1B3A5C</color>
+    <color name="bleu_profond">#122A44</color>
+    <color name="bleu_clair">#4A90D9</color>
+    <color name="blanc">#FFFFFF</color>
+    <color name="gris">#718096</color>
+    <color name="fond">#F2F7FC</color>
+    <color name="carte">#FFFFFF</color>
+    <color name="texte">#1F2933</color>
+    <color name="texte_doux">#5A6B7B</color>
+    <color name="soleil">#E9A23B</color>
+    <color name="pluie">#3B82C4</color>
+    <color name="erreur">#C0392B</color>
+
+    <!-- Alias conservés pour les composants hérités du modèle -->
+    <color name="primary">@color/bleu_nuit</color>
+    <color name="primary_variant">@color/bleu_profond</color>
+    <color name="accent">@color/bleu_clair</color>
+    <color name="background">@color/fond</color>
+    <color name="card_background">@color/carte</color>
+    <color name="text_primary">@color/texte</color>
+    <color name="text_secondary">@color/texte_doux</color>
+    <color name="text_white">@color/blanc</color>
+    <color name="color_success">#38A169</color>
+    <color name="color_warning">#DD6B20</color>
+    <color name="color_error">@color/erreur</color>
+</resources>

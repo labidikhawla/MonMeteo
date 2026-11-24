@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.MonMeteo" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/bleu_nuit</item>
+        <item name="colorOnPrimary">@color/blanc</item>
+        <item name="android:statusBarColor">@color/bleu_nuit</item>
+    </style>
+
+    <style name="Theme.MonMeteo" parent="Base.Theme.MonMeteo" />
+</resources>
