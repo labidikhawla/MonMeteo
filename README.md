@@ -157,7 +157,13 @@ Le fichier installable est produit ici :
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Le projet est livré avec l'APK déjà généré (5,5 Mo), hors dépôt car `*.apk` est ignoré par Git ; il est transmis séparément comme demandé.
+L'APK est **inclus dans le dépôt** à la racine, dans `livrable/` :
+
+```
+livrable/MeteoPoche-v1.0-debug.apk
+```
+
+Il est versionné volontairement pour que la livraison (code source + binaire installable) tienne dans un seul dépôt GitHub. Le chemin de sortie naturel de Gradle, `app/build/outputs/apk/debug/app-debug.apk`, reste ignoré par Git car il est régénéré à chaque build.
 
 ### Installation sur un téléphone
 
