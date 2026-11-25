@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Même noms de couleurs que values/colors.xml, valeurs différentes.
+     Android choisit ce fichier dès que le mode Nuit est activé. -->
+<resources>
+    <color name="fond">#10151C</color>
+    <color name="carte">#1B2735</color>
+    <color name="texte">#E6EDF3</color>
+    <color name="texte_doux">#9FB0C0</color>
+    <color name="diviseur">#2C3E50</color>
+</resources>

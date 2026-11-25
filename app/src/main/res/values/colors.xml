@@ -13,6 +13,10 @@
     <color name="soleil">#E9A23B</color>
     <color name="pluie">#3B82C4</color>
     <color name="erreur">#C0392B</color>
+    <color name="diviseur">#D8E4F0</color>
+
+    <!-- Noms utilisés par les layouts : ils changent de valeur en nuit grâce à values-night -->
+    <color name="app_background">@color/fond</color>
 
     <!-- Alias conservés pour les composants hérités du modèle -->
     <color name="primary">@color/bleu_nuit</color>
