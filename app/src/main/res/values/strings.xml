@@ -3,10 +3,32 @@
     <string name="app_name">Météo Poche</string>
 
     <string name="titre_app">Météo Poche</string>
-    <string name="sous_titre">La météo de n\'importe quelle ville, sans compte et sans publicité.</string>
+    <string name="sous_titre">La météo précise de n\'importe quelle ville, gratuitement et sans publicité.</string>
 
+    <!-- Écran de connexion -->
+    <string name="titre_connexion">Connexion</string>
+    <string name="btn_mode_sombre">Mode Sombre</string>
+    <string name="btn_mode_clair">Mode Clair</string>
+    <string name="hint_email">Adresse e-mail</string>
+    <string name="hint_mot_de_passe">Mot de passe</string>
+    <string name="btn_connexion">Se connecter</string>
+    <string name="btn_creer_compte">Créer un compte</string>
+    <string name="compte_admin">Compte administrateur créé par la base SQLite : admin@meteo.tn / Admin123!</string>
+
+    <!-- Écran d\'inscription -->
+    <string name="titre_register">Créer un compte</string>
+    <string name="hint_nom">Nom complet</string>
+    <string name="hint_mot_de_passe_8">Mot de passe (8 caractères minimum)</string>
+    <string name="label_ville_preferee">Ta ville habituelle</string>
+    <string name="btn_inscrire">S\'inscrire</string>
+
+    <!-- Tableau de bord utilisateur -->
     <string name="hint_ville">Nom de la ville (ex : Tunis)</string>
     <string name="btn_meteo">Voir la météo</string>
+    <string name="btn_deconnexion">Déconnexion</string>
+    <string name="label_villes_rapides">Villes rapides (GridView)</string>
+    <string name="label_previsions">Prévisions sur 7 jours</string>
+    <string name="btn_doc_api">Réponse de l\'API</string>
 
     <string name="statut_initial">Saisis une ville, puis lance la recherche.</string>
     <string name="statut_recherche">Recherche en cours…</string>
@@ -14,10 +36,11 @@
     <string name="statut_hors_ligne">Impossible de joindre le serveur. Vérifie ta connexion.</string>
     <string name="statut_source">Données fournies par Open-Meteo, API publique sans clé.</string>
 
-    <string name="etiquette_condition">Ciel</string>
-    <string name="etiquette_ressenti">Ressenti</string>
-    <string name="etiquette_vent">Vent</string>
-    <string name="etiquette_humidite">Humidité</string>
-    <string name="etiquette_journee">Aujourd\'hui</string>
+    <!-- Tableau de bord administrateur -->
+    <string name="titre_admin">Administration : comptes inscrits</string>
+
+    <!-- WebView -->
+    <string name="titre_webview">URL appelée par l\'application</string>
+    <string name="btn_retour">Retour</string>
 
 </resources>

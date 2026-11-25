@@ -2,131 +2,96 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/fond"
+    android:background="@color/app_background"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_large">
-
-        <TextView
-            android:id="@+id/txtTitre"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:text="@string/titre_app"
-            android:textColor="@color/bleu_nuit"
-            android:textSize="@dimen/text_size_header"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txtSousTitre"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
-            android:layout_marginBottom="@dimen/spacing_large"
-            android:text="@string/sous_titre"
-            android:textColor="@color/texte_doux"
-            android:textSize="@dimen/text_size_medium" />
-
-        <EditText
-            android:id="@+id/edtVille"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/fond_carte"
-            android:hint="@string/hint_ville"
-            android:importantForAutofill="no"
-            android:inputType="textCapWords"
-            android:padding="@dimen/spacing_medium"
-            android:textColor="@color/texte"
-            android:textColorHint="@color/texte_doux"
-            android:textSize="@dimen/text_size_medium" />
-
-        <Button
-            android:id="@+id/btnMeteo"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/button_height"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:backgroundTint="@color/bleu_nuit"
-            android:text="@string/btn_meteo"
-            android:textColor="@color/blanc" />
-
-        <TextView
-            android:id="@+id/txtStatut"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:text="@string/statut_initial"
-            android:textColor="@color/texte_doux"
-            android:textSize="@dimen/text_size_small" />
+        android:padding="24dp">
 
         <LinearLayout
-            android:id="@+id/carteMeteo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:background="@drawable/fond_carte"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_medium"
-            android:visibility="gone">
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/soleil_pluie" />
 
             <TextView
-                android:id="@+id/txtVille"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textColor="@color/bleu_nuit"
-                android:textSize="@dimen/text_size_title"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:text="@string/titre_connexion"
+                android:textColor="@color/text_primary"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/txtTemperature"
-                android:layout_width="match_parent"
+            <Button
+                android:id="@+id/btnToggleTheme"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textColor="@color/soleil"
-                android:textSize="44sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtCondition"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/texte"
-                android:textSize="@dimen/text_size_medium" />
-
-            <TextView
-                android:id="@+id/txtRessenti"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textColor="@color/texte"
-                android:textSize="@dimen/text_size_medium" />
-
-            <TextView
-                android:id="@+id/txtVent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textColor="@color/texte"
-                android:textSize="@dimen/text_size_medium" />
-
-            <TextView
-                android:id="@+id/txtHumidite"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textColor="@color/texte"
-                android:textSize="@dimen/text_size_medium" />
-
-            <TextView
-                android:id="@+id/txtJournee"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_small"
-                android:textColor="@color/texte_doux"
-                android:textSize="@dimen/text_size_medium" />
+                android:text="@string/btn_mode_sombre" />
         </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="@string/sous_titre"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:hint="@string/hint_email"
+            android:importantForAutofill="no"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/text_primary" />
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/hint_mot_de_passe"
+            android:importantForAutofill="no"
+            android:inputType="textPassword"
+            android:textColor="@color/text_primary" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_connexion" />
+
+        <Button
+            android:id="@+id/btnGoRegister"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/btn_creer_compte" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/fond_carte"
+            android:padding="14dp"
+            android:text="@string/compte_admin"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
     </LinearLayout>
 </ScrollView>

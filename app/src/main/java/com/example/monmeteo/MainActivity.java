@@ -1,188 +1,101 @@
 package com.example.monmeteo;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import androidx.appcompat.app.AppCompatDelegate;
 
 public class MainActivity extends AppCompatActivity {
 
-	private EditText champVille;
-	private Button boutonMeteo;
-	private TextView statut;
-	private View carte;
-	private TextView txtVille, txtTemperature, txtCondition, txtRessenti, txtVent, txtHumidite, txtJournee;
+    private static final String PREFS_NAME = "theme_prefs";
+    private static final String KEY_IS_DARK = "is_dark_mode";
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+    private EditText etEmail, etPassword;
+    private Button btnToggleTheme;
+    private UserDbHelper db;
 
-		champVille = findViewById(R.id.edtVille);
-		boutonMeteo = findViewById(R.id.btnMeteo);
-		statut = findViewById(R.id.txtStatut);
-		carte = findViewById(R.id.carteMeteo);
-		txtVille = findViewById(R.id.txtVille);
-		txtTemperature = findViewById(R.id.txtTemperature);
-		txtCondition = findViewById(R.id.txtCondition);
-		txtRessenti = findViewById(R.id.txtRessenti);
-		txtVent = findViewById(R.id.txtVent);
-		txtHumidite = findViewById(R.id.txtHumidite);
-		txtJournee = findViewById(R.id.txtJournee);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        // La préférence est lue AVANT setContentView : sinon l'écran s'affiche en clair puis clignote.
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean(KEY_IS_DARK, isSystemInDarkMode());
+        if (isDark) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
 
-		boutonMeteo.setOnClickListener(v -> lancerRecherche());
-	}
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-	private void lancerRecherche() {
-		final String ville = champVille.getText().toString().trim();
-		if (ville.isEmpty()) {
-			statut.setText(R.string.hint_ville);
-			return;
-		}
+        db = new UserDbHelper(this);
+        etEmail = findViewById(R.id.etEmail);
+        etPassword = findViewById(R.id.etPassword);
+        Button btnLogin = findViewById(R.id.btnLogin);
+        Button btnGoRegister = findViewById(R.id.btnGoRegister);
+        btnToggleTheme = findViewById(R.id.btnToggleTheme);
+        updateToggleButtonText(isDark);
 
-		carte.setVisibility(View.GONE);
-		statut.setText(R.string.statut_recherche);
-		boutonMeteo.setEnabled(false);
+        btnToggleTheme.setOnClickListener(v -> {
+            boolean currentDark = prefs.getBoolean(KEY_IS_DARK, isSystemInDarkMode());
+            boolean newDark = !currentDark;
+            prefs.edit().putBoolean(KEY_IS_DARK, newDark).apply();
+            if (newDark) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            }
+        });
 
-		// Les appels réseau sont interdits sur le thread UI : on passe en arrière-plan.
-		new Thread(() -> {
-			String erreur = null;
-			Metee metee = null;
-			try {
-				metee = chargerMetee(ville);
-			} catch (VilleIntrouvable e) {
-				erreur = getString(R.string.statut_ville_inconnue);
-			} catch (IOException e) {
-				erreur = getString(R.string.statut_hors_ligne);
-			}
+        btnLogin.setOnClickListener(v -> login());
+        btnGoRegister.setOnClickListener(v ->
+                startActivity(new Intent(this, RegisterActivity.class)));
+    }
 
-			final Metee resultat = metee;
-			final String messageErreur = erreur;
-			runOnUiThread(() -> {
-				boutonMeteo.setEnabled(true);
-				if (messageErreur != null) {
-					statut.setText(messageErreur);
-				} else {
-					afficher(resultat);
-				}
-			});
-		}).start();
-	}
+    private boolean isSystemInDarkMode() {
+        int nightModeFlags = getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    }
 
-	private Metee chargerMetee(String ville) throws IOException {
-		String urlVille = "https://geocoding-api.open-meteo.com/v1/search?name="
-				+ URLEncoder.encode(ville, "UTF-8") + "&count=1&language=fr&format=json";
+    private void updateToggleButtonText(boolean isDark) {
+        if (btnToggleTheme != null) {
+            btnToggleTheme.setText(isDark ? "Mode Clair" : "Mode Sombre");
+        }
+    }
 
-		JSONArray resultats;
-		try {
-			resultats = new JSONObject(lireJson(urlVille)).optJSONArray("results");
-		} catch (Exception e) {
-			throw new VilleIntrouvable();
-		}
-		if (resultats == null || resultats.length() == 0) {
-			throw new VilleIntrouvable();
-		}
+    private void login() {
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString();
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() || password.isEmpty()) {
+            Toast.makeText(this, "Vérifie l'e-mail et le mot de passe.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-		JSONObject lieu = resultats.optJSONObject(0);
-		String lat = lieu.optString("latitude");
-		String lon = lieu.optString("longitude");
+        UserProfile user = db.login(email, password);
+        if (user == null) {
+            Toast.makeText(this, "Identifiants incorrects.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-		String urlMeteo = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon
-				+ "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m"
-				+ "&daily=temperature_2m_max,temperature_2m_min&timezone=auto";
-
-		Metee metee = new Metee();
-		metee.ville = lieu.optString("name");
-		try {
-			JSONObject reponse = new JSONObject(lireJson(urlMeteo));
-			JSONObject courant = reponse.getJSONObject("current");
-			JSONObject jour = reponse.getJSONObject("daily");
-
-			metee.temperature = arrondi(courant.getDouble("temperature_2m"));
-			metee.condition = decrire(courant.getInt("weather_code"));
-			metee.ressenti = arrondi(courant.getDouble("apparent_temperature"));
-			metee.vent = arrondi(courant.getDouble("wind_speed_10m"));
-			metee.humidite = String.valueOf(courant.getInt("relative_humidity_2m"));
-			metee.min = arrondi(jour.getJSONArray("temperature_2m_min").getDouble(0));
-			metee.max = arrondi(jour.getJSONArray("temperature_2m_max").getDouble(0));
-		} catch (Exception e) {
-			throw new IOException("Réponse météo illisible", e);
-		}
-		return metee;
-	}
-
-	private String lireJson(String url) throws IOException {
-		HttpURLConnection connexion = (HttpURLConnection) new URL(url).openConnection();
-		connexion.setConnectTimeout(8000);
-		connexion.setReadTimeout(8000);
-		connexion.setRequestProperty("Accept", "application/json");
-		try {
-			if (connexion.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				throw new IOException("HTTP " + connexion.getResponseCode());
-			}
-			StringBuilder corps = new StringBuilder();
-			try (BufferedReader lecteur = new BufferedReader(
-					new InputStreamReader(connexion.getInputStream(), "UTF-8"))) {
-				String ligne;
-				while ((ligne = lecteur.readLine()) != null) {
-					corps.append(ligne);
-				}
-			}
-			return corps.toString();
-		} finally {
-			connexion.disconnect();
-		}
-	}
-
-	private void afficher(Metee metee) {
-		txtVille.setText(metee.ville);
-		txtTemperature.setText(metee.temperature + " °C");
-		txtCondition.setText("Ciel : " + metee.condition);
-		txtRessenti.setText("Ressenti : " + metee.ressenti + " °C");
-		txtVent.setText("Vent : " + metee.vent + " km/h");
-		txtHumidite.setText("Humidité : " + metee.humidite + " %");
-		txtJournee.setText("Aujourd'hui : " + metee.min + " °C  /  " + metee.max + " °C");
-
-		carte.setVisibility(View.VISIBLE);
-		statut.setText(R.string.statut_source);
-	}
-
-	private String arrondi(double valeur) {
-		return String.valueOf(Math.round(valeur));
-	}
-
-	// Codes météo WMO, la convention utilisée par Open-Meteo.
-	private String decrire(int code) {
-		if (code == 0) return "Dégagé";
-		if (code <= 2) return "Peu nuageux";
-		if (code == 3) return "Couvert";
-		if (code <= 48) return "Brouillard";
-		if (code <= 57) return "Bruine";
-		if (code <= 67) return "Pluie";
-		if (code <= 77) return "Neige";
-		if (code <= 82) return "Averses";
-		if (code <= 86) return "Averses de neige";
-		if (code <= 99) return "Orage";
-		return "Indéterminé";
-	}
-
-	private static class Metee {
-		String ville, temperature, condition, ressenti, vent, humidite, min, max;
-	}
-
-	private static class VilleIntrouvable extends IOException {
-	}
+        Intent intent;
+        if (user.getRole() == Role.ADMIN) {
+            intent = new Intent(this, AdminDashboardActivity.class);
+        } else {
+            intent = new Intent(this, UserDashboardActivity.class);
+        }
+        intent.putExtra("user_id", user.getId());
+        intent.putExtra("user_name", user.getFullName());
+        intent.putExtra("user_role", user.getRole().name());
+        startActivity(intent);
+        finish();
+    }
 }
