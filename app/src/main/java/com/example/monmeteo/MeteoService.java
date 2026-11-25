@@ -1,6 +1,7 @@
 package com.example.monmeteo;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -51,7 +52,7 @@ public class MeteoService {
         JSONArray resultats;
         try {
             resultats = new JSONObject(lireJson(urlGeocodage)).optJSONArray("results");
-        } catch (Exception e) {
+        } catch (JSONException e) {
             throw new VilleIntrouvable();
         }
         if (resultats == null || resultats.length() == 0) {
@@ -105,8 +106,8 @@ public class MeteoService {
 
     public static String lireJson(String url) throws IOException {
         HttpURLConnection connexion = (HttpURLConnection) new URL(url).openConnection();
-        connexion.setConnectTimeout(8000);
-        connexion.setReadTimeout(8000);
+        connexion.setConnectTimeout(15000);
+        connexion.setReadTimeout(20000);
         connexion.setRequestProperty("Accept", "application/json");
         try {
             if (connexion.getResponseCode() != HttpURLConnection.HTTP_OK) {
