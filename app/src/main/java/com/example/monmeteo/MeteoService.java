@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.Normalizer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -47,7 +48,7 @@ public class MeteoService {
     // Appel 2 : l'API de prévisions renvoie le temps actuel et les 7 prochains jours.
     public static Metee charger(String ville) throws IOException {
         String urlGeocodage = "https://geocoding-api.open-meteo.com/v1/search?name="
-                + URLEncoder.encode(ville, "UTF-8") + "&count=1&language=fr&format=json";
+                + URLEncoder.encode(ville, "UTF-8") + "&count=5&language=fr&format=json";
 
         JSONArray resultats;
         try {
@@ -59,7 +60,7 @@ public class MeteoService {
             throw new VilleIntrouvable();
         }
 
-        JSONObject lieu = resultats.optJSONObject(0);
+        JSONObject lieu = choisir(resultats, ville);
 
         String urlPrevisions = "https://api.open-meteo.com/v1/forecast?latitude="
                 + lieu.optString("latitude") + "&longitude=" + lieu.optString("longitude")
@@ -102,6 +103,27 @@ public class MeteoService {
             throw new IOException("Réponse météo illisible", e);
         }
         return metee;
+    }
+
+    // Le géocodeur classe ses résultats par population : « beja » renvoie d'abord
+    // Béjaïa (Algérie) avant Béja (Tunisie). On garde donc le libellé qui correspond
+    // exactement à la saisie, accents et majuscules compris, sinon le premier résultat.
+    private static JSONObject choisir(JSONArray resultats, String ville) {
+        String cible = sansAccents(ville);
+        for (int i = 0; i < resultats.length(); i++) {
+            JSONObject candidat = resultats.optJSONObject(i);
+            if (candidat != null && sansAccents(candidat.optString("name")).equals(cible)) {
+                return candidat;
+            }
+        }
+        return resultats.optJSONObject(0);
+    }
+
+    private static String sansAccents(String texte) {
+        String minuscule = texte.toLowerCase(Locale.FRANCE);
+        return Normalizer.normalize(minuscule, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("[^a-z0-9]", "");
     }
 
     public static String lireJson(String url) throws IOException {
