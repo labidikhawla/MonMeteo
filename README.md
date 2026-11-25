@@ -1,82 +1,111 @@
 # Météo Poche
 
-Application Android native (Java + XML) qui répond à un problème réel : **savoir en deux secondes quel temps il fait réellement dans une ville, avant de sortir, de voyager ou de travailler dehors**, sans installer une application gonflée de publicité et sans créer de compte.
+Application Android native (**Java + XML**, Android Studio) qui répond à un problème réel : **savoir en deux secondes quel temps il fait réellement dans une ville tunisienne** — pour sortir, voyager, travailler aux champs ou annoncer un examen — sans écran de publicité, sans compte distant et sans clé API à payer.
 
-En Tunisie, beaucoup d'étudiants, d'agriculteurs et de voyageurs ont besoin d'une météo fiable et instantanée pour une ville précise (Sousse, Kairouan, Djerba…). Les applications existantes imposent un compte, de la géolocalisation permanente et des écrans publicitaires. **Météo Poche** fait l'inverse : un champ de texte, un bouton, une réponse.
+Les applications météo classiques imposent un compte cloud, la géolocalisation permanente et des dizaines de mégaoctets de publicité. **Météo Poche** fait l'inverse : un compte **local à l'appareil** (SQLite), une barre de ville, sept jours de prévisions, un mode sombre.
 
 ---
 
-## 1. Fonctionnalités
+## 1. Parcours de l'application
 
-| Fonctionnalité | Détail |
-| --- | --- |
-| Recherche par ville | Saisie libre du nom, accents et espaces acceptés |
-| Température actuelle | En degrés Celsius, arrondie |
-| Condition du ciel | Traduite en français à partir du code WMO officiel |
-| Température ressentie | `apparent_temperature` |
-| Vent | Vitesse à 10 m, en km/h |
-| Humidité | En pourcentage |
-| Min / max du jour | Plage thermique de la journée |
-| Gestion d'erreurs | Ville introuvable, serveur injoignable, aucune connexion |
+| Écran | Activity | Rôle |
+| --- | --- | --- |
+| Connexion | `MainActivity` | E-mail + mot de passe vérifiés contre SQLite, bouton **Mode Sombre / Mode Clair** |
+| Inscription | `RegisterActivity` | Crée un compte `USER`, validation des champs, ville préférée |
+| Espace utilisateur | `UserDashboardActivity` | Météo du jour + **ListView** des 7 jours + **GridView** de villes rapides + **WebView** de l'URL appelée |
+| Espace administrateur | `AdminDashboardActivity` | **ListView** de tous les comptes inscrits, garde-fou sur le rôle |
 
-L'application tient en **un seul écran** : c'est voulu, c'est ce qui la rend rapide.
+Compte administrateur créé par la base à la première exécution : `admin@meteo.tn` / `Admin123!`.
+
+---
+
+## 1.1 L'application en fonctionnement
+
+Captures réelles, émulateur Android (API 37), testées une par une :
+
+| Connexion (clair) | Connexion (sombre) | Inscription |
+| --- | --- | --- |
+| ![](docs/screenshots/05_connexion_clair.png) | ![](docs/screenshots/04_connexion_sombre.png) | ![](docs/screenshots/06_inscription.png) |
+
+| Espace utilisateur : API en direct | Réponse JSON dans la WebView | Espace administrateur |
+| --- | --- | --- |
+| ![](docs/screenshots/02_user_sousse.png) | ![](docs/screenshots/03_webview.png) | ![](docs/screenshots/07_admin.png) |
 
 ---
 
 ## 2. Stack technique
 
-- **Langage** : Java (aucun Kotlin)
-- **Interface** : XML uniquement (`activity_main.xml`), aucune interface dessinée en code
-- **IDE** : Android Studio Quail 4 (2026.1.4 Patch 1)
-- **Android Gradle Plugin** : 9.4.1 — **Gradle** : 9.6.0
-- **SDK** : compile/target 37, `minSdk` 24 (compatible Android 7.0 et plus)
-- **Thème** : Material 3 (`Theme.Material3.DayNight.NoActionBar`), clair et sombre
-- **Dépendances tierces** : **aucune**. L'appel réseau utilise `HttpURLConnection` et le parsing utilise `org.json`, deux classes déjà intégrées au SDK Android.
+- **Langage** : Java 11 (aucun Kotlin)
+- **Interface** : XML uniquement, aucune vue construite à la main en Java
+- **IDE** : Android Studio — AGP 9.4.1, Gradle 9.6.0
+- **SDK** : compile/target 37, `minSdk` 24 (Android 7.0+)
+- **Base de données** : `SQLiteOpenHelper` (SDK Android)
+- **Réseau** : `HttpURLConnection` + `org.json`
+- **Dépendances tierces** : **aucune** pour le métier. Pas de Retrofit, pas de Glide, pas de Room : tout repose sur le SDK, donc le build fonctionne hors ligne et l'APK reste léger.
 
 ---
 
-## 3. Intégration et consommation d'une API externe
+## 3. Concepts des cours intégrés
 
-C'est le cœur technique du projet. L'application consomme **deux points d'entrée de l'API publique Open-Meteo**, gratuite et **sans clé API** — donc le démonstrateur fonctionne sur n'importe quel téléphone, sans compte à créer et sans quota à surveiller.
+Le projet applique volontairement les deux cours du module, sans rien ajouter de plus difficile.
 
-### 3.1 Les deux appels
+| Concept du cours | Où il est utilisé dans Météo Poche |
+| --- | --- |
+| Thème dynamique Jour / Nuit | `res/values/colors.xml` + `res/values-night/colors.xml` |
+| `SharedPreferences` + `AppCompatDelegate.setDefaultNightMode()` | `MainActivity` (lu **avant** `setContentView` pour éviter le flash) |
+| `SQLiteOpenHelper`, table avec `CHECK` et `COLLATE NOCASE` | `UserDbHelper` |
+| Sel `SecureRandom` + PBKDF2-HMAC-SHA256 + comparaison en temps constant | `UserDbHelper.createSalt / hashPassword / constantTimeEquals` |
+| Rôles et redirection après connexion | `Role`, `UserProfile`, `MainActivity.login()` |
+| `ListView` + `BaseAdapter` + `getView()` + patron **ViewHolder** | `PrevisionAdapter` + `item_prevision.xml` |
+| `BaseAdapter` pour une liste à plusieurs champs | `UserAdapter` + `row_user.xml` |
+| `ArrayAdapter` + `GridView` (`numColumns="auto_fit"`, `columnWidth`) | `UserDashboardActivity` + `item_ville.xml` |
+| `OnItemClickListener` + `getItemAtPosition()` | Clic sur une ville de la grille ou sur un compte admin |
+| `WebView` + `loadUrl()` + permission `INTERNET` | `WebViewActivity` |
+| `Toast`, `EditText.setError()`, `Patterns.EMAIL_ADDRESS` | `MainActivity`, `RegisterActivity` |
+| Déclaration des activities dans `AndroidManifest.xml` | `RegisterActivity`, `UserDashboardActivity`, `AdminDashboardActivity`, `WebViewActivity` |
+
+---
+
+## 4. Intégration et consommation d'une API externe
+
+Le cœur technique : **deux points d'entrée de l'API publique [Open-Meteo](https://open-meteo.com)**, gratuite, **sans clé API** et sans inscription.
+
+### 4.1 Les deux appels enchaînés
 
 | Étape | Endpoint | Paramètres | Ce qu'on en tire |
 | --- | --- | --- | --- |
-| 1. Géocodage | `https://geocoding-api.open-meteo.com/v1/search` | `name`, `count=1`, `language=fr`, `format=json` | `latitude`, `longitude`, `name` (nom officiel de la ville) |
-| 2. Prévisions | `https://api.open-meteo.com/v1/forecast` | `latitude`, `longitude`, `current=…`, `daily=…`, `timezone=auto` | température, ressenti, humidité, code météo, vent, min/max du jour |
+| 1. Géocodage | `https://geocoding-api.open-meteo.com/v1/search` | `name`, `count=1`, `language=fr`, `format=json` | `latitude`, `longitude`, `name`, `admin1` |
+| 2. Prévisions | `https://api.open-meteo.com/v1/forecast` | `latitude`, `longitude`, `current=…`, `daily=weather_code,temperature_2m_max,temperature_2m_min`, `timezone=auto` | temps actuel + 7 jours |
 
-Le géocodage est indispensable : l'API météo ne prend **que** des coordonnées. L'application convertit donc d'abord le texte saisi par l'utilisateur en position géographique, puis interroge la météo avec cette position. `timezone=auto` garantit que les min/max correspondent bien à la journée locale de la ville, pas à UTC.
+L'API météo n'accepte **que** des coordonnées : l'application convertit d'abord le texte saisi en position, puis interroge la météo. `timezone=auto` aligne les journées sur le fuseau local de la ville (`Africa/Tunis`), pas sur UTC.
 
-### 3.2 Extrait de code de la consommation
+### 4.2 Le code de consommation
 
 ```java
-private Metee chargerMetee(String ville) throws IOException {
-    String urlVille = "https://geocoding-api.open-meteo.com/v1/search?name="
+public static Metee charger(String ville) throws IOException {
+    String urlGeocodage = "https://geocoding-api.open-meteo.com/v1/search?name="
             + URLEncoder.encode(ville, "UTF-8") + "&count=1&language=fr&format=json";
 
-    JSONArray resultats = new JSONObject(lireJson(urlVille)).optJSONArray("results");
+    JSONArray resultats = new JSONObject(lireJson(urlGeocodage)).optJSONArray("results");
     if (resultats == null || resultats.length() == 0) throw new VilleIntrouvable();
-
     JSONObject lieu = resultats.optJSONObject(0);
-    String lat = lieu.optString("latitude");
-    String lon = lieu.optString("longitude");
 
-    String urlMeteo = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon
+    String urlPrevisions = "https://api.open-meteo.com/v1/forecast?latitude="
+            + lieu.optString("latitude") + "&longitude=" + lieu.optString("longitude")
             + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m"
-            + "&daily=temperature_2m_max,temperature_2m_min&timezone=auto";
+            + "&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto";
 
-    JSONObject reponse = new JSONObject(lireJson(urlMeteo));
+    JSONObject reponse = new JSONObject(lireJson(urlPrevisions));
     JSONObject courant = reponse.getJSONObject("current");
-    JSONObject jour    = reponse.getJSONObject("daily");
-    // ... lecture des valeurs et construction de l'objet Metee
+    JSONObject quotidien = reponse.getJSONObject("daily");
+    // ... construction du DTO Metee et de ses 7 objets Prevision
 }
 ```
 
-La couche HTTP est isolée dans une seule méthode, réutilisable pour n'importe quelle API :
+La couche HTTP est isolée dans une seule méthode, réutilisable contre n'importe quelle API JSON :
 
 ```java
-private String lireJson(String url) throws IOException {
+public static String lireJson(String url) throws IOException {
     HttpURLConnection connexion = (HttpURLConnection) new URL(url).openConnection();
     connexion.setConnectTimeout(8000);
     connexion.setReadTimeout(8000);
@@ -91,101 +120,142 @@ private String lireJson(String url) throws IOException {
 }
 ```
 
-### 3.3 Réponse réelle de l'API (vérifiée le 24/11/2026)
+### 4.3 Points techniques à savoir expliquer
 
-Requête : `GET https://api.open-meteo.com/v1/forecast?latitude=35.82539&longitude=10.63699&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`
-
-```json
-{
-  "timezone": "Africa/Tunis",
-  "current": {
-    "time": "2026-11-24T23:45",
-    "temperature_2m": 17.4,
-    "apparent_temperature": 17.2,
-    "relative_humidity_2m": 82,
-    "weather_code": 0,
-    "wind_speed_10m": 11.3
-  },
-  "daily": { "temperature_2m_min": [ ... ], "temperature_2m_max": [ ... ] }
-}
-```
-
-Affichage produit par l'application pour Sousse : **17 °C**, **Ciel : Dégagé**, **Ressenti : 17 °C**, **Vent : 11 km/h**, **Humidité : 82 %**.
-
-### 3.4 Points techniques à savoir expliquer
-
-- **Permission** : `<uses-permission android:name="android.permission.INTERNET" />` dans `AndroidManifest.xml`. Sans elle, chaque appel échoue silencieusement.
-- **Interdiction du réseau sur le thread UI** : Android lève une `NetworkOnMainThreadException` si un appel HTTP part du thread principal. Les deux requêtes sont donc confiées à un `new Thread(...)`, et l'affichage revient sur le thread d'interface avec `runOnUiThread(...)`.
-- **Encodage de l'URL** : `URLEncoder.encode(ville, "UTF-8")` transforme « Sousse El Medina » ou « Kairouan » en paramètre valide ; sans ça, les espaces cassent la requête.
-- **Codes WMO** : `weather_code` n'est pas un texte mais un code normalisé par l'Organisation météorologique mondiale (0 = dégagé, 3 = couvert, 61 = pluie, 95 = orage). La méthode `decrire(int code)` les traduit en français.
-- **Séparation des responsabilités** : la classe interne `Metee` sert de DTO — le thread de fond construit un objet simple dont toutes les valeurs sont déjà formatées en texte, l'interface n'a plus qu'à l'afficher. Elle ne touche jamais au JSON.
+- **Permission** : `<uses-permission android:name="android.permission.INTERNET" />` dans le manifeste. Elle ne demande aucune autorisation à l'exécution.
+- **Jamais de réseau sur le thread UI** : sans `new Thread(...)` puis `runOnUiThread(...)`, Android lève une `NetworkOnMainThreadException`. C'est le rôle de `MeteoService.rechercher(ville, listener)`.
+- **Encodage de l'URL** : `URLEncoder.encode(ville, "UTF-8")` rend « Sidi Bou Zid » et les accents valides dans la requête.
+- **Codes WMO** : `weather_code` est un code normalisé par l'Organisation météorologique mondiale (0 = dégagé, 3 = couvert, 61 = pluie, 95 = orage). `MeteoService.decrire()` le traduit en français et `symbole()` lui associe un glyphe affiché dans la `ListView`.
+- **DTO séparé** : `Metee` et `Prevision` ne contiennent que des textes déjà formatés, produits sur le thread de fond ; l'interface n'affiche jamais de JSON brut.
+- **Preuve dans l'application** : le bouton « Réponse de l'API » ouvre une `WebView` sur l'URL exacte appelée, ce qui montre la réponse JSON réelle sur place.
 
 ---
 
-## 4. Arborescence
+## 5. Authentification locale : ce qui est stocké et pourquoi
+
+`UserDbHelper` hérite de `SQLiteOpenHelper` et crée la table :
+
+```sql
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL COLLATE NOCASE UNIQUE,
+  password_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  ville_preferee TEXT,
+  role TEXT NOT NULL CHECK (role IN ('ADMIN', 'USER'))
+)
+```
+
+Aucun mot de passe n'est stocké en clair :
+
+- **sel** : 16 octets aléatoires par utilisateur via `SecureRandom`, pour que deux mots de passe identiques donnent deux hachés différents ;
+- **hachage** : `PBKDF2WithHmacSHA256`, 120 000 itérations, 256 bits — on ralentit volontairement une attaque par force brute ;
+- **comparaison** : `constantTimeEquals()` compare octet par octet avec un XOR cumulé, pour que la durée de la comparaison ne révèle pas la position du premier caractère différent ;
+- **e-mail** : `COLLATE NOCASE UNIQUE` rend `Admin@Meteo.tn` et `admin@meteo.tn` identiques et empêche les doublons ;
+- **rôle** : la contrainte `CHECK` bloque tout rôle inconnu au niveau de la base, et `AdminDashboardActivity` re-vérifie le rôle avant d'afficher les comptes.
+
+Les données ne quittent jamais le téléphone : il n'y a aucun serveur applicatif.
+
+---
+
+## 6. Arborescence
 
 ```
 MonMeteo/
 ├── app/src/main/
-│   ├── AndroidManifest.xml            // permission INTERNET + activity principale
+│   ├── AndroidManifest.xml                 // permission INTERNET + 4 activities
 │   ├── java/com/example/monmeteo/
-│   │   └── MainActivity.java          // UI, appels API, parsing JSON, erreurs
+│   │   ├── MainActivity.java               // thème + connexion + redirection par rôle
+│   │   ├── RegisterActivity.java           // inscription et validation
+│   │   ├── UserDashboardActivity.java      // météo, ListView, GridView, WebView
+│   │   ├── AdminDashboardActivity.java     // liste des comptes (ListView)
+│   │   ├── WebViewActivity.java            // loadUrl() sur l'API
+│   │   ├── UserDbHelper.java               // SQLite + sel + PBKDF2
+│   │   ├── PrevisionAdapter.java           // BaseAdapter + ViewHolder
+│   │   ├── UserAdapter.java                // BaseAdapter, 3 champs par ligne
+│   │   ├── MeteoService.java               // HttpURLConnection + JSON + WMO
+│   │   ├── Metee.java / Prevision.java     // modèles
+│   │   ├── Role.java / UserProfile.java    // authentification
 │   └── res/
-│       ├── layout/activity_main.xml   // toute l'interface, en XML
-│       ├── drawable/fond_carte.xml    // carte arrondie blanche
-│       ├── values/{colors,dimens,strings,themes}.xml
-│       └── values-night/themes.xml    // thème sombre
-├── build.gradle.kts / settings.gradle.kts / gradle/libs.versions.toml
+│       ├── layout/  activity_main · activity_register · activity_user_dashboard
+│       │            activity_admin_dashboard · activity_web_view
+│       │            item_prevision · item_ville · row_user
+│       ├── drawable/ fond_carte.xml · soleil_pluie.xml
+│       ├── values/       colors · dimens · strings · arrays · themes
+│       └── values-night/ colors · themes
+├── livrable/MeteoPoche-v2.0-debug.apk      // APK livré, versionné
 └── README.md
 ```
 
 ---
 
-## 5. Générer et livrer l'APK
+## 7. Générer et livrer l'APK
 
-Deux méthodes, toutes deux testées :
+**Depuis Android Studio** : `Build → Generate Bundles(s)/APK(s) → Build APK(s)`, puis `Build → Analyze APK…` pour vérifier le contenu.
 
-**Dans Android Studio** : `Build → Generate Signed App Bundle / APKs… → APK → Next → debug → Finish`
+**En ligne de commande**, à la racine du projet :
 
-**En ligne de commande** (depuis la racine du projet) :
 ```
 ./gradlew assembleDebug
 ```
 
-Le fichier installable est produit ici :
+Sortie naturelle de Gradle :
+
 ```
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-L'APK est **inclus dans le dépôt** à la racine, dans `livrable/` :
+L'APK est ensuite copié, versionné et livré ici :
 
 ```
-livrable/MeteoPoche-v1.0-debug.apk
+livrable/MeteoPoche-v2.0-debug.apk
 ```
 
-Il est versionné volontairement pour que la livraison (code source + binaire installable) tienne dans un seul dépôt GitHub. Le chemin de sortie naturel de Gradle, `app/build/outputs/apk/debug/app-debug.apk`, reste ignoré par Git car il est régénéré à chaque build.
+`app/build/` reste ignoré par Git (`app-debug.apk` est régénéré à chaque build) ; seul le fichier livré est commité, pour que la livraison — code source + binaire installable — tienne dans un seul dépôt.
 
-### Installation sur un téléphone
+### Installer l'APK sur un téléphone
 
-Méthode 1 — copier `app-debug.apk` sur le téléphone, l'ouvrir, autoriser « sources inconnues ».
+1. Copier `MeteoPoche-v2.0-debug.apk` sur le téléphone (câble USB, WhatsApp, Drive…).
+2. Ouvrir le fichier avec le gestionnaire de fichiers → autoriser **« Installer des applications inconnues »** pour cette source.
+3. Lancer **Météo Poche**, s'inscrire, ou se connecter avec `admin@meteo.tn` / `Admin123!`.
 
-Méthode 2 — via ADB, téléphone branché en USB et « débogage USB » activé :
+Alternative via ADB, téléphone en débogage USB :
+
 ```
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r livrable/MeteoPoche-v2.0-debug.apk
 ```
+
+L'APK est signé avec la clé de debug Android Studio : suffisant pour un examen, insuffisant pour le Play Store (nécessiterait `assembleRelease` + une clé de signature personnelle).
 
 ---
 
-## 6. Limites assumées
+## 8. Publication GitHub
 
-- Une seule ville à la fois, pas de liste de favoris ni d'historique.
-- Pas d'écran de prévisions sur plusieurs jours, alors que l'API les renvoie déjà : c'est la première évolution prévue.
-- Pas de mise en cache : chaque appui sur le bouton relance deux requêtes réseau.
-- L'application nécessite une connexion ; elle n'annonce pas explicitement le mode hors ligne par une icône dédiée, seulement par un message.
+Dépôt : `https://github.com/labidikhawla/MonMeteo`
 
-## 7. Évolutions possibles
+```
+git init -b master
+git add .
+git commit -m "…"          // un commit par étape du développement
+git remote add origin https://github.com/labidikhawla/MonMeteo.git
+git push -u origin master
+```
 
-1. Afficher les 7 jours déjà reçus dans `daily` (aucun nouvel appel nécessaire).
-2. Ville mémorisée dans `SharedPreferences` au lancement.
-3. Icônes météo dessinées en `VectorDrawable` selon le code WMO.
-4. Géolocalisation automatique par `FusedLocationProviderClient` en complément de la saisie manuelle.
+L'historique est volontairement découpé par étape (thème, base de données, activités, adaptateurs, API, livraison APK) plutôt qu'en un seul dépôt final.
+
+---
+
+## 9. Limites assumées
+
+- Aucune mise en cache : chaque recherche retape deux requêtes réseau.
+- Pas de géolocalisation automatique : la ville est saisie ou choisie dans la grille.
+- Les données météo restent dépendantes d'Open-Meteo : hors connexion, l'écran affiche un message d'erreur au lieu d'un ancien résultat.
+- L'inscription est locale : réinstaller l'application repart d'une base vide (aucun compte n'existe avant la première exécution).
+
+## 10. Évolutions possibles
+
+1. Mettre en cache la dernière réponse JSON dans SQLite et l'afficher hors ligne.
+2. Ajouter une `RecyclerView` en alternative à la `ListView`.
+3. Proposer une deuxième vue des mêmes données : graphique des températures sur 7 jours.
+4. Notifier chaque matin la météo de la ville préférée avec `WorkManager`.
