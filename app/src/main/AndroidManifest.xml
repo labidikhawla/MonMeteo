@@ -24,6 +24,20 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserDashboardActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".WebViewActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
