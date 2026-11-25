@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="villes_tunisiennes">
+        <item>Sidi Bouzid</item>
+        <item>Tunis</item>
+        <item>Sousse</item>
+        <item>Kairouan</item>
+        <item>Gabès</item>
+        <item>Djerba</item>
+    </string-array>
+</resources>
